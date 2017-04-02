@@ -7,7 +7,7 @@ We will try to create an app to help non-native English speakers to improve thei
 
 We will use data abstraction to implement the game - keep track of the right answers, and accumulate the points from the user's right answers. 
 
-We will use recursion (filter) to parse the received information.
+We will use recursion to parse the received information.
 
 We will use object-orientation to represent the users progress in the game, this will include state-modification.  
 
