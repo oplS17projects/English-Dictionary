@@ -25,7 +25,9 @@ At the completion of this project we will deliver a software that helps non-nati
 We will feel that our project has been successful if we are able to integrate all three parts (GUI, API, data), and runs smothly. That means that a "non-technical" and with limited English language knowledge person can use it, and find it helpful. 
 
 ## Architecture Diagram
+![alt_tag](https://github.com/oplS17projects/English-Dictionary/blob/master/diagram.png)
 
+First we are going to create a gui interface to let user enter a word she/he wants to search. Then we will send a request the Oxford API. We will receive the the definition of the word, and parse it using it JSON. Then we will display the definition of the word in a gui interface, and save the user's search history. Lastly, we will use the user's search history to play games. 
 
 ## Schedule
 
