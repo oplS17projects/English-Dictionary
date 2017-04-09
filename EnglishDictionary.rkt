@@ -1,7 +1,9 @@
 #lang racket
 ;joao
 
+
 ; What to do?
+; --> learn github
 ; --> have one window "create" another (parent/child frames) - done 
 ; --> resize windows - done
 ; --> design a game window/ how to position things on a window
