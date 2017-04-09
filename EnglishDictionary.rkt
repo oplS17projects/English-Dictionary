@@ -6,13 +6,14 @@
 ; --> learn github
 ; --> have one window "create" another (parent/child frames) - done 
 ; --> resize windows - done
-; --> design a game window/ how to position things on a window
-; --> design main window
+; --> design a game window/ how to position things on a window, choose random choices - done
+; --> design main window -  
 ; --> append string -done
 ; --> print a string on the window.
 
 (require net/url)
 (require racket/gui)
+(define word-list (list "one" "two" "three" "four" "five" "six" "seven" "eight" "nine" "ten"))
 
 (define button_enabled #t)
 
@@ -34,7 +35,8 @@
 (new button% [parent main_frame]
      [label "Search a word"]
      [callback (λ (button e)
-                 (search-word (send word-field get-value)))])
+                 (new message% [label (search-word (send word-field get-value))]
+                      [parent main_frame]))])
 
 ;; this button is initially set to false; change to true when there
 ;; are enough words to play a game.
@@ -45,10 +47,61 @@
               (send game_frame show #t))]
   [enabled button_enabled])
 
+;;;;; create a random num in between 0 and (upper-bound - 1)
+
+(define (create-rdm-num upper-bound) 
+   (modulo (eval (date-second (seconds->date(current-seconds)))) upper-bound))
+
+;;; create a list with 3 possible answers
+(define (possible-answ list num rdm-num)
+  (if (= num rdm-num)
+      (car list)
+      (possible-answ (cdr list) (+ num 1) rdm-num)))
+
+
+(new button% [parent game_frame]
+     [label (possible-answ word-list 0 1)]
+     [callback (λ (button e)
+                 1)])
+
+(new button% [parent game_frame]
+     [label (possible-answ word-list 0 1) ]
+     [callback (λ (button e)
+                 1)])
+
+(new button% [parent game_frame]
+     [label (possible-answ word-list 0 1)]
+     [callback (λ (button e)
+                 1)])
+
+;;why is this giving me an error?
+;(new button% [parent game_frame]
+;     [label (possible-answ word-list 0 (create-rdm-num 10))]
+;    [callback (λ (button e)
+;                 1)])
+
+
+
 (send main_frame show #t)
 
 (define (search-word word)
-  (define url  (string->url (string-append "https://od-api.oxforddictionaries.com:443/api/v1/entries/en/" word)))
-  (define header (list app_id app_key))
-  (define my-port (get-pure-port url header))
-(display-pure-port my-port))
+  (string-append word " was searched"))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
