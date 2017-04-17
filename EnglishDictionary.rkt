@@ -2,23 +2,13 @@
 ;joao, sokthai
 
 
-; What to do?
-; --> learn github
-; --> have one window "create" another (parent/child frames) - done 
-; --> resize windows - done
-; --> design a game window/ how to position things on a window, choose random choices - done
-; --> design main window -  
-; --> append string -done
-; --> print a string on the window.
+(require rsound net/sendurl)
+(require  json racket/gui  net/url (only-in srfi/13 string-contains))
 
-(require net/url net/sendurl)
-(require racket/gui (only-in srfi/13 string-constains) json)
-(define word-list (list "one" "two" "three" "four" "five" "six" "seven" "eight" "nine" "ten"))
+(define word-list (list "boy" "lamp" "book" "city" "pen" "computer"))
 
 (define button_enabled #t)
-(define open_api "https://od-api.oxforddictionaries.com:443/api/v1/entries/en/")
-(define app_id  "app_id: 7b58b972")
-(define app_key "app_key: b70c1d9cbbc48700a36ac012292c533c")
+
 
 (define main_frame (new frame% [label "main"]
                         [height 500]
@@ -35,11 +25,13 @@
 (new button% [parent main_frame]
      [label "Search a word"]
      [callback (λ (button e)
-                 (new message% [label (search-word (send word-field get-value))]
-                      [parent main_frame]))])
+                 (send def-msg set-label (cadr (cadr (search (send word-field get-value))))))])
 
-;; this button is initially set to false; change to true when there
-;; are enough words to play a game.
+
+(new button% [parent main_frame]
+     [label "Listen to Pronounciation"]
+     [callback (λ (button e)
+                 (pronounce result))])
 
 (new button% [parent main_frame]
   [label "Play a game"]
@@ -47,57 +39,76 @@
               (send game_frame show #t))]
   [enabled button_enabled])
 
-;;;;; create a random num in between 0 and (upper-bound - 1)
+(define def-msg (new message% [parent main_frame]
+                      [label ""]
+                      [auto-resize #t]))
+;;game: a button will play a sound
+;;      three button each a choice
+;;      this will need to be inside an object --->make-a-window
 
-(define (create-rdm-num upper-bound) 
-   (modulo (eval (date-second (seconds->date(current-seconds)))) upper-bound))
+(define right-answer "")
 
-;;; create a list with 3 possible answers
-(define (possible-answ list num rdm-num)
+(define list-of-answers word-list)
+
+(define (get-right-answer)
+  (begin (set! right-answer (list-ref list-of-answers 0 (random (length list-of-answers))))
+         (set! list-of-answers (filter (λ (x) (not (equal? x right-answer))) list-of-answers))
+         list-of-answers))
+
+(define (generate-list-of-choices word lst)
+  (append (list right-answer)
+          (list (list-ref (filter (λ (x) (not (equal? x right-answer))) word-list) 0 (random (- (length word-list) 1))))
+          (list (list-ref (filter (λ (x) (not (equal? x right-answer))) word-list) 0 (random (- (length word-list) 1))))))
+
+;; duplicates can still happen here
+(define (refresh-buttons)
+  (let ((a (generate-list-of-choices right-answer word-list)))
+          (send game-button1 set-label (list-ref a 0 (random (length a))))
+          (send game-button2 set-label (list-ref a 0 (random (length a))))
+          (send game-button3 set-label (list-ref a 0 (random (length a))))))
+
+(define (list-ref list num rdm-num)
   (if (= num rdm-num)
       (car list)
-      (possible-answ (cdr list) (+ num 1) rdm-num)))
+      (list-ref (cdr list) (+ num 1) rdm-num)))
 
-
-(new button% [parent game_frame]
-     [label (possible-answ word-list 0 1)]
+(define game-button1 (new button% [parent game_frame]
+     [label (list-ref word-list 0 (random (length word-list)))]
      [callback (λ (button e)
-                 1)])
+                 (begin (get-right-answer)
+                        (refresh-buttons)))]))
 
-(new button% [parent game_frame]
-     [label (possible-answ word-list 0 1) ]
+(define game-button2 (new button% [parent game_frame]
+     [label (list-ref word-list 0 (random (length word-list))) ]
      [callback (λ (button e)
-                 1)])
+                 (begin (get-right-answer)
+                        (refresh-buttons)))]))
 
-(new button% [parent game_frame]
-     [label (possible-answ word-list 0 1)]
+(define game-button3 (new button% [parent game_frame]
+     [label (list-ref word-list 0 (random (length word-list)))]
      [callback (λ (button e)
-                 1)])
+                 (begin (get-right-answer)
+                        (refresh-buttons)))]))
 
-;;why is this giving me an error?
-;(new button% [parent game_frame]
-;     [label (possible-answ word-list 0 (create-rdm-num 10))]
-;    [callback (λ (button e)
-;                 1)])
-
-
+(define game-listen-word (new button% [parent game_frame]
+     [label "Listen to the Word"]
+     [callback (λ (button e)
+                 (play-sound (string-append path right-answer "_gb_1.mp3") #t))]))
 
 (send main_frame show #t)
 
-(define (search-word word)
-  (string-append word " was searched"))
 
 
 
 ;------------
 (define word "")
-;(define app_id "app_id:da0194c3")
-;(define app_key "app_key:761ad80847bb97ee40842f7ecc43fade")
-;(define open_api "https://od-api.oxforddictionaries.com:443/api/v1/entries/en/")
+(define app_id "app_id:da0194c3")
+(define app_key "app_key:761ad80847bb97ee40842f7ecc43fade")
+(define open_api "https://od-api.oxforddictionaries.com:443/api/v1/entries/en/")
 
 
 
-;(define myrespond "")
+(define myrespond "")
 
 (define file-path "C:\\Users\\sokthai\\Downloads/")
 (define sound-url "")
@@ -106,8 +117,8 @@
 
 (define macPath "/Users/sokthaitang/downloads/") ; path for mac
 (define winPath "C:\\Users\\thai\\Downloads\\") ; path for widnow
-(define ubuPath "/home/thai/Downloads/") ; pat for ubuntu
-
+(define ubuPath "/home/joao/Downloads/") ; pat for ubuntu
+(define path ubuPath)
 
 (define (search w)
 
@@ -127,7 +138,7 @@
          (searchDict (readjson-from-input respond) '|examples| "examples:")
          (searchDict (readjson-from-input respond) '|audioFile| "pronunciation:")
          (let* ((audioURL (soundPath result)) 
-                (fileName (string-append macPath
+                (fileName (string-append path
                                        (substring audioURL 43 (string-length audioURL)))))
            (if (not (file-exists? fileName))
                (send-url (soundPath result))
@@ -227,7 +238,7 @@
     (cond  ((equal? lst "") '())
            (else
             (play-sound
-               (string-append macPath
+               (string-append path
                                        (substring audioURL 43
                                                   (string-length audioURL))) #t)))
  )
