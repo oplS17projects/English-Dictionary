@@ -9,15 +9,42 @@
 
 (define button_enabled #t)
 
+;helper functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define right-answer "")
 
+(define (build-sublist-r num lst)
+  (if (= num 0)
+      '()
+      (let ((a (list-ref lst 0 (random (length lst)))))
+        (cons a (build-sublist-r (- num 1 ) (filter (λ (x) (not (equal? x a))) lst))))))
+      
+
+(define (refresh-buttons list-of-buttons)
+  (let ((a (build-sublist-r 3 word-list)))
+    (set! right-answer (list-ref a 0 (random 3)))
+    (send (car list-of-buttons) set-label (list-ref a 0 0))
+    (send (cadr list-of-buttons) set-label (list-ref a 0 1))
+    (send (caddr list-of-buttons) set-label (list-ref a 0 2))))
+
+(define (list-ref list num rdm-num)
+  (if (= num rdm-num)
+      (car list)
+      (list-ref (cdr list) (+ num 1) rdm-num)))
+
+(define (check-answer guess answer)
+  (if (equal? guess answer)
+      (display "Right")
+      (display "wrong")))
+;;; needs to "rember"
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;main frame components 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define main_frame (new frame% [label "main"]
                         [height 500]
                         [width 500]))
-
-(define game_frame (new frame% [label "game"]
-                         [height 500]
-                         [width 500]
-                         [parent main_frame]))
 
 (define word-field (new text-field% [parent main_frame]
 [label "word:"]))
@@ -36,64 +63,57 @@
 (new button% [parent main_frame]
   [label "Play a game"]
   [callback (λ (button e)
-              (send game_frame show #t))]
-  [enabled button_enabled])
+              (begin (refresh-buttons game1-buttons )
+                     (send game_frame show #t)))]
+  [enabled (>= (length word-list) 5)])
 
 (define def-msg (new message% [parent main_frame]
                       [label ""]
                       [auto-resize #t]))
-;;game: a button will play a sound
-;;      three button each a choice
-;;      this will need to be inside an object --->make-a-window
 
-(define right-answer "")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define list-of-answers word-list)
+;game1 frame
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define game_frame (new frame% [label "game"]
+                         [height 500]
+                         [width 500]
+                         [parent main_frame]))
 
-(define (get-right-answer)
-  (begin (set! right-answer (list-ref list-of-answers 0 (random (length list-of-answers))))
-         (set! list-of-answers (filter (λ (x) (not (equal? x right-answer))) list-of-answers))
-         list-of-answers))
-
-(define (generate-list-of-choices word lst)
-  (append (list right-answer)
-          (list (list-ref (filter (λ (x) (not (equal? x right-answer))) word-list) 0 (random (- (length word-list) 1))))
-          (list (list-ref (filter (λ (x) (not (equal? x right-answer))) word-list) 0 (random (- (length word-list) 1))))))
-
-;; duplicates can still happen here
-(define (refresh-buttons)
-  (let ((a (generate-list-of-choices right-answer word-list)))
-          (send game-button1 set-label (list-ref a 0 (random (length a))))
-          (send game-button2 set-label (list-ref a 0 (random (length a))))
-          (send game-button3 set-label (list-ref a 0 (random (length a))))))
-
-(define (list-ref list num rdm-num)
-  (if (= num rdm-num)
-      (car list)
-      (list-ref (cdr list) (+ num 1) rdm-num)))
-
-(define game-button1 (new button% [parent game_frame]
+(define game1-button1 (new button% [parent game_frame]
      [label (list-ref word-list 0 (random (length word-list)))]
      [callback (λ (button e)
-                 (begin (get-right-answer)
-                        (refresh-buttons)))]))
+                 (refresh-buttons game1-buttons))]))
 
-(define game-button2 (new button% [parent game_frame]
+(define game1-button2 (new button% [parent game_frame]
      [label (list-ref word-list 0 (random (length word-list))) ]
      [callback (λ (button e)
-                 (begin (get-right-answer)
-                        (refresh-buttons)))]))
+                 (refresh-buttons game1-buttons))]))
 
-(define game-button3 (new button% [parent game_frame]
+(define game1-button3 (new button% [parent game_frame]
      [label (list-ref word-list 0 (random (length word-list)))]
      [callback (λ (button e)
-                 (begin (get-right-answer)
-                        (refresh-buttons)))]))
+                 (refresh-buttons game1-buttons))]))
 
 (define game-listen-word (new button% [parent game_frame]
      [label "Listen to the Word"]
      [callback (λ (button e)
                  (play-sound (string-append path right-answer "_gb_1.mp3") #t))]))
+
+(define game1-buttons (list game1-button1 game1-button2 game1-button3)) 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;game1: a button will play a sound
+;;      three button each a choice
+;;      this will need to be inside an object --->make-a-window
+
+;;game2: fill in the blank
+;;       filter an example gvien by oxford dictionary
+;;       give 3 options as buttons 
 
 (send main_frame show #t)
 
@@ -116,9 +136,9 @@
 
 
 (define macPath "/Users/sokthaitang/downloads/") ; path for mac
-(define winPath "C:\\Users\\thai\\Downloads\\") ; path for widnow
+(define winPath "C:\\Users\\joaocarlos\\Downloads\\") ; path for widnow
 (define ubuPath "/home/joao/Downloads/") ; pat for ubuntu
-(define path ubuPath)
+(define path winPath)
 
 (define (search w)
 
