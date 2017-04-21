@@ -1,6 +1,9 @@
 #lang racket
 ;joao, sokthai
-;change
+;what needs to be done (joao) --> make sure to exclude words without "examples"
+;                      --> take a word out of the game, once it has been used as a right answer (should be done within "make-game"
+;                      --> objects: make-game make-player
+;                      --> make the gui "look better"
 
 (require rsound net/sendurl)
 (require  json racket/gui  net/url (only-in srfi/13 string-contains))
@@ -27,6 +30,9 @@
     (send (cadr list-of-buttons) set-label (list-ref a 0 1))
     (send (caddr list-of-buttons) set-label (list-ref a 0 2))))
 
+(define (refresh-msg msg label)
+  (send msg set-label label))
+
 (define (list-ref list num rdm-num)
   (if (= num rdm-num)
       (car list)
@@ -36,6 +42,19 @@
   (if (equal? guess answer)
       (display "Right")
       (display "wrong")))
+
+(define (string->list lst)
+  (string-split lst) )
+
+(define (list->string lst)
+ (string-join lst) )
+
+(define (FIB-phrase sentence answer)
+  (list->string (foldr (λ (x y) (if (equal? x answer)
+                     (append (list "********") y)
+                     (append (list x) y))) '() (string->list sentence))))
+            
+
 ;;; needs to "rember"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -61,10 +80,21 @@
                  (pronounce result))])
 
 (new button% [parent main_frame]
-  [label "Play a game"]
+  [label "Play What's the Word"]
   [callback (λ (button e)
               (begin (refresh-buttons game1-buttons )
                      (send game_frame show #t)))]
+  [enabled (>= (length word-list) 5)])
+
+
+(new button% [parent main_frame]
+  [label "Play Fill in the Blank"]
+  [callback (λ (button e)
+              (begin (refresh-buttons game2-buttons )
+                     (refresh-msg phrase-msg (FIB-phrase
+                                              (list-ref (cdr (caddr (search right-answer))) 0 0)
+                                              right-answer))
+                     (send game2_frame show #t)))]
   [enabled (>= (length word-list) 5)])
 
 (define def-msg (new message% [parent main_frame]
@@ -81,17 +111,17 @@
                          [parent main_frame]))
 
 (define game1-button1 (new button% [parent game_frame]
-     [label (list-ref word-list 0 (random (length word-list)))]
+     [label ""]
      [callback (λ (button e)
                  (refresh-buttons game1-buttons))]))
 
 (define game1-button2 (new button% [parent game_frame]
-     [label (list-ref word-list 0 (random (length word-list))) ]
+     [label "" ]
      [callback (λ (button e)
                  (refresh-buttons game1-buttons))]))
 
 (define game1-button3 (new button% [parent game_frame]
-     [label (list-ref word-list 0 (random (length word-list)))]
+     [label ""]
      [callback (λ (button e)
                  (refresh-buttons game1-buttons))]))
 
@@ -100,12 +130,45 @@
      [callback (λ (button e)
                  (play-sound (string-append path right-answer "_gb_1.mp3") #t))]))
 
+
 (define game1-buttons (list game1-button1 game1-button2 game1-button3)) 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;game2: "Fill in the blanks"
+;       Three choices displayed in buttons
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define game2_frame (new frame% [label "game 2"]
+                         [height 500]
+                         [width 500]
+                         [parent main_frame]))
 
+(define game2-button1 (new button% [parent game2_frame]
+     [label ""]
+     [callback (λ (button e)
+                 (refresh-buttons game2-buttons))]))
+
+(define game2-button2 (new button% [parent game2_frame]
+     [label "" ]
+     [callback (λ (button e)
+                 (refresh-buttons game2-buttons)
+                 (refresh-msg phrase-msg (FIB-phrase
+                                              (list-ref (cdr (caddr (search right-answer))) 0 0)
+                                              right-answer)))]))
+
+(define game2-button3 (new button% [parent game2_frame]
+     [label ""]
+     [callback (λ (button e)
+                 (refresh-buttons game2-buttons)
+                 (refresh-msg phrase-msg (FIB-phrase
+                                              (list-ref (cdr (caddr (search right-answer))) 0 0)
+                                              right-answer)))]))
+
+(define phrase-msg (new message% [parent game2_frame]
+                      [label ""]
+                      [auto-resize #t]))
+
+(define game2-buttons (list game2-button1 game2-button2 game2-button3)) 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;game1: a button will play a sound
 ;;      three button each a choice
