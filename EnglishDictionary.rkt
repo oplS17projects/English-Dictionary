@@ -195,7 +195,8 @@
 
 (define macPath "/Users/sokthaitang/downloads/") ; path for mac
 (define winPath "C:\\Users\\joaocarlos\\Downloads\\") ; path for widnow
-(define ubuPath "/home/joao/Downloads/") ; pat for ubuntu
+(define ubuPath "/home/joao/Downloads/") ; path for ubuntu
+(define history (list))
 (define path winPath)
 
 (define (search w)
@@ -217,6 +218,7 @@
            (if (not (file-exists? fileName))
                (send-url (soundPath result))
                'ok)
+           (set! history (append history (list word)))
          )
   ))
   result
