@@ -1,7 +1,6 @@
 #lang racket
 ;joao, sokthai
 ;what needs to be done (joao) --> make the gui "look better"
-;                             --> add "winning" / "loosing" sound sound
 
 (require rsound net/sendurl)
 (require  json racket/gui  net/url (only-in srfi/13 string-contains))
