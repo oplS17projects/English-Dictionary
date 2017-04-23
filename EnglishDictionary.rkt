@@ -357,6 +357,7 @@ dispatch)
 (define ubuPath "/home/joao/Downloads/") ; path for ubuntu
 (define history (list))
 (define path winPath)
+(define wordList "wordList")
 
 (define (search w)
   (set! result "")
@@ -377,7 +378,7 @@ dispatch)
            (if (not (file-exists? fileName))
                (send-url (soundPath result))
                'ok)
-           (set! history (append history (list word)))
+           (write-to-file word wordList)
          )
   ))
   result
@@ -441,3 +442,12 @@ dispatch)
             (play-sound
                (string-append path (substring audioURL 43 (string-length audioURL))) #t)))))
 
+
+ (define (write-to-file data path) 
+   (with-output-to-file path 
+     (lambda () 
+       (write data)) #:exists 'append))
+
+
+(define (read-from-file path)
+  (file->list path))
