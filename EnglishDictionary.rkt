@@ -1,7 +1,7 @@
 #lang racket
 ;joao, sokthai
-;what needs to be done (joao) --> make sure to exclude words without "examples"
-;                      --> make the gui "look better"
+;what needs to be done (joao) --> make the gui "look better"
+;                             --> add "winning" / "loosing" sound sound
 
 (require rsound net/sendurl)
 (require  json racket/gui  net/url (only-in srfi/13 string-contains))
@@ -21,7 +21,7 @@
       (let ((a (list-ref lst 0 (random (length lst)))))
         (cons a (build-sublist-r (- num 1 ) (filter (λ (x) (not (equal? x a))) lst))))))
       
-;;try to make this more abstract : acccept n number of buttons (recursion)
+
 (define (refresh-buttons list-of-buttons list-of-choice)
     (send (car list-of-buttons) set-label (list-ref list-of-choice 0 0))
     (send (cadr list-of-buttons) set-label (list-ref list-of-choice 0 1))
@@ -93,8 +93,10 @@ dispatch)
 
   (define (check-answer index)
     (if (equal? answer (list-ref choices 0 index))
-          1
-          0))
+          (begin (play-sound (string-append path "tada.mp3") #t)
+                 1)
+          (begin (play-sound (string-append path "Wrong-buzzer.mp3") #t)
+                 0)))
   
   (define (get-answer)
     answer)
@@ -150,8 +152,8 @@ dispatch)
      [callback (λ (button e)
                  (let ((a (search (send word-field get-value))))
                    (if (equal? (car (car a)) "Error:")
-                       (send def-msg set-label (string-append "Error: " (send word-field get-value) " Not Found"))
-                       (send def-msg set-label (cadr (cadr a))))))])
+                       (send def-text-field set-value (string-append "Error: " (send word-field get-value) " Not Found"))
+                       (send def-text-field set-value (cadr (cadr a))))))])
 
 
 (define def-msg (new message% [parent main_frame]
@@ -162,6 +164,13 @@ dispatch)
                       [auto-resize #t]
                       ))
 
+(define def-text-field (new text-field%
+                            [label ""]
+                            [parent main_frame]
+                            [min-height 200]
+                            [min-width 200]))
+
+(send (send def-text-field get-editor) auto-wrap #t)
 
 (new button% [parent main_frame]
      [label "Listen to Pronounciation"]
@@ -171,22 +180,26 @@ dispatch)
 (new button% [parent main_frame]
   [label "Play What's the Word"]
   [callback (λ (button e)
-              (begin (set! game (make-game (read-from-file wordList)))
+              (if (> (length (read-from-file wordList)) 3)
+                  (begin (set! game (make-game (remove-duplicates (read-from-file wordList))))
                      (game 'generate-choices)
                      ((game 'refresh-game-buttons) game1-buttons)
                      (game 'set-right-answer)
-                     (send game_frame show #t)))])
+                     (send game_frame show #t))
+                  -1))])
 
 
 (new button% [parent main_frame]
   [label "Play Fill in the Blank"]
   [callback (λ (button e)
-              (begin (set! game (make-game (read-from-file wordList)))
+              (if (> (length (read-from-file wordList-with-example)) 3)
+                  (begin (set! game (make-game (remove-duplicates (read-from-file wordList-with-example))))
                      (game 'generate-choices)
                      ((game 'refresh-game-buttons) game2-buttons)
                      (game 'set-right-answer)
                      ((game 'refresh-game-msg) phrase-msg)
-                     (send game2_frame show #t)))])
+                     (send game2_frame show #t))
+                  -1))])
 
 (new button% [parent main_frame]
      [label "See Progress"]
@@ -321,13 +334,13 @@ dispatch)
                                     [parent stats_frame]
                                     [label ""]
                                     [auto-resize #t]
-                                    [font (make-object font% 20 'modern)]))
+                                    [font (make-object font% 15 'modern)]))
 
 (define points-earned-msg (new message%
                        [parent stats_frame]
                        [label ""]
                        [auto-resize #t]
-                       [font (make-object font% 10 'modern)]))
+                       [font (make-object font% 15 'modern)]))
 
 
 (define ok-button (new button% [parent stats_frame]
@@ -358,6 +371,7 @@ dispatch)
 (define history (list))
 (define path winPath)
 (define wordList "wordList")
+(define wordList-with-example "wordList-with-example")
 
 (define (search word)
   (set! result "")
@@ -378,7 +392,11 @@ dispatch)
            (if (not (file-exists? fileName))
                (send-url (soundPath result))
                'ok)
-           (write-to-file word wordList)
+           (if (= (length result) 3)
+               (write-to-file word wordList)
+               (begin (write-to-file word wordList)
+                      (write-to-file word wordList-with-example)))
+               
          )
   ))
   result
