@@ -1,8 +1,6 @@
 #lang racket
 ;joao, sokthai
 ;what needs to be done (joao) --> make sure to exclude words without "examples"
-;                      --> take a word out of the game, once it has been used as a right answer (should be done within "make-game"
-;                      --> objects: make-game make-player
 ;                      --> make the gui "look better"
 
 (require rsound net/sendurl)
@@ -14,6 +12,7 @@
 
 ;helper functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (define right-answer "")
 
 (define (build-sublist-r num lst)
@@ -22,13 +21,11 @@
       (let ((a (list-ref lst 0 (random (length lst)))))
         (cons a (build-sublist-r (- num 1 ) (filter (λ (x) (not (equal? x a))) lst))))))
       
-
-(define (refresh-buttons list-of-buttons)
-  (let ((a (build-sublist-r 3 word-list)))
-    (set! right-answer (list-ref a 0 (random 3)))
-    (send (car list-of-buttons) set-label (list-ref a 0 0))
-    (send (cadr list-of-buttons) set-label (list-ref a 0 1))
-    (send (caddr list-of-buttons) set-label (list-ref a 0 2))))
+;;try to make this more abstract : acccept n number of buttons (recursion)
+(define (refresh-buttons list-of-buttons list-of-choice)
+    (send (car list-of-buttons) set-label (list-ref list-of-choice 0 0))
+    (send (cadr list-of-buttons) set-label (list-ref list-of-choice 0 1))
+    (send (caddr list-of-buttons) set-label (list-ref list-of-choice 0 2)))
 
 (define (refresh-msg msg label)
   (send msg set-label label))
@@ -53,7 +50,73 @@
   (list->string (foldr (λ (x y) (if (equal? x answer)
                      (append (list "********") y)
                      (append (list x) y))) '() (string->list sentence))))
-            
+
+(define (make-player)
+  (define points 0)
+  (define (add-point point)
+    (begin (set! points (+ points point))
+            'ok))
+  (define (get-points)
+    points)
+  (define (dispatch msg)
+    (cond ((eq? msg 'add-point) add-point)
+          ((eq? msg 'get-points) (get-points))))
+dispatch)
+
+(define (make-game words-at-play)
+  (define answer "")
+  (define choices '())
+
+  (define (generate-choices)
+    (set! choices (build-sublist-r 3 words-at-play)))
+
+  
+  (define (set-right-answer)
+    (begin (set! answer (list-ref choices 0 (random 3)))))
+  
+  (define (refresh-game-buttons list-of-buttons)
+    (refresh-buttons list-of-buttons choices))
+
+  (define (check-answer index)
+    (if (equal? answer (list-ref choices 0 index))
+          1
+          0))
+  
+  (define (get-answer)
+    answer)
+  
+  (define (filter-answer)
+    (begin (set! words-at-play (filter (λ (x) (not (equal? x answer))) words-at-play))
+           'ok))
+  (define (how-many-word-at-play?)
+    (length words-at-play))
+  
+  (define (end-game? frame)
+    (if (= (length words-at-play) 3)
+        (send frame show #false)
+        'ok))
+  (define (refresh-game-msg msg)
+    (refresh-msg msg (FIB-phrase
+                             (list-ref (cdr (caddr (search answer))) 0 0)
+                             answer)))
+  
+  (define (dispatch msg)
+    (cond ((eq? msg 'refresh-game-buttons) refresh-game-buttons)
+          ((eq? msg 'set-right-answer) (set-right-answer))
+          ((eq? msg 'generate-choices) (generate-choices))
+          ((eq? msg 'check-answer) check-answer)
+          ((eq? msg 'filter-answer) (filter-answer))
+          ((eq? msg 'how-many-word-at-play?) (how-many-word-at-play?))
+          ((eq? msg 'end-game?) end-game?)
+          ((eq? msg 'refresh-game-msg) refresh-game-msg)
+          ((eq? msg 'get-answer) (get-answer))))
+  
+  
+  dispatch
+  )
+
+(define game (make-game '()))
+(define player (make-player))
 
 ;;; needs to "rember"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -82,7 +145,11 @@
 (new button% [parent main_frame]
   [label "Play What's the Word"]
   [callback (λ (button e)
-              (begin (refresh-buttons game1-buttons )
+              (begin (set! game (make-game word-list))
+                     (set! player (make-player))
+                     (game 'generate-choices)
+                     ((game 'refresh-game-buttons) game1-buttons)
+                     (game 'set-right-answer)
                      (send game_frame show #t)))]
   [enabled (>= (length word-list) 5)])
 
@@ -90,12 +157,13 @@
 (new button% [parent main_frame]
   [label "Play Fill in the Blank"]
   [callback (λ (button e)
-              (begin (refresh-buttons game2-buttons )
-                     (refresh-msg phrase-msg (FIB-phrase
-                                              (list-ref (cdr (caddr (search right-answer))) 0 0)
-                                              right-answer))
-                     (send game2_frame show #t)))]
-  [enabled (>= (length word-list) 5)])
+              (begin (set! game (make-game word-list))
+                     (set! player (make-player))
+                     (game 'generate-choices)
+                     ((game 'refresh-game-buttons) game2-buttons)
+                     (game 'set-right-answer)
+                     ((game 'refresh-game-msg) phrase-msg)
+                     (send game2_frame show #t)))])
 
 (define def-msg (new message% [parent main_frame]
                       [label ""]
@@ -113,22 +181,37 @@
 (define game1-button1 (new button% [parent game_frame]
      [label ""]
      [callback (λ (button e)
-                 (refresh-buttons game1-buttons))]))
+                 ((player 'add-point) ((game 'check-answer) 0))
+                 (game 'filter-answer)
+                 ((game 'end-game?) game_frame)
+                 (game 'generate-choices)
+                 ((game 'refresh-game-buttons) game1-buttons)
+                 (game 'set-right-answer))]))
 
 (define game1-button2 (new button% [parent game_frame]
      [label "" ]
      [callback (λ (button e)
-                 (refresh-buttons game1-buttons))]))
+                 ((player 'add-point) ((game 'check-answer) 1))
+                 (game 'filter-answer)
+                 ((game 'end-game?) game_frame)
+                 (game 'generate-choices)
+                 ((game 'refresh-game-buttons) game1-buttons)
+                 (game 'set-right-answer))]))
 
 (define game1-button3 (new button% [parent game_frame]
      [label ""]
      [callback (λ (button e)
-                 (refresh-buttons game1-buttons))]))
+                 ((player 'add-point) ((game 'check-answer) 2))
+                 (game 'filter-answer)
+                 ((game 'end-game?) game_frame)
+                 (game 'generate-choices)
+                 ((game 'refresh-game-buttons) game1-buttons)
+                 (game 'set-right-answer))]))
 
 (define game-listen-word (new button% [parent game_frame]
      [label "Listen to the Word"]
      [callback (λ (button e)
-                 (play-sound (string-append path right-answer "_gb_1.mp3") #t))]))
+                 (play-sound (string-append path (game 'get-answer) "_gb_1.mp3") #t))]))
 
 
 (define game1-buttons (list game1-button1 game1-button2 game1-button3)) 
@@ -146,23 +229,35 @@
 (define game2-button1 (new button% [parent game2_frame]
      [label ""]
      [callback (λ (button e)
-                 (refresh-buttons game2-buttons))]))
+                 ((player 'add-point) ((game 'check-answer) 0))
+                 (game 'filter-answer)
+                 ((game 'end-game?) game2_frame)
+                 (game 'generate-choices)
+                 ((game 'refresh-game-buttons) game2-buttons)
+                 ((game 'refresh-game-msg) phrase-msg)
+                 (game 'set-right-answer))]))
 
 (define game2-button2 (new button% [parent game2_frame]
      [label "" ]
      [callback (λ (button e)
-                 (refresh-buttons game2-buttons)
-                 (refresh-msg phrase-msg (FIB-phrase
-                                              (list-ref (cdr (caddr (search right-answer))) 0 0)
-                                              right-answer)))]))
+                 ((player 'add-point) ((game 'check-answer) 0))
+                 (game 'filter-answer)
+                 ((game 'end-game?) game2_frame)
+                 (game 'generate-choices)
+                 ((game 'refresh-game-buttons) game2-buttons)
+                 ((game 'refresh-game-msg) phrase-msg)
+                 (game 'set-right-answer))]))
 
 (define game2-button3 (new button% [parent game2_frame]
      [label ""]
      [callback (λ (button e)
-                 (refresh-buttons game2-buttons)
-                 (refresh-msg phrase-msg (FIB-phrase
-                                              (list-ref (cdr (caddr (search right-answer))) 0 0)
-                                              right-answer)))]))
+                 ((player 'add-point) ((game 'check-answer) 0))
+                 (game 'filter-answer)
+                 ((game 'end-game?) game2_frame)
+                 (game 'generate-choices)
+                 ((game 'refresh-game-buttons) game2-buttons)
+                 ((game 'refresh-game-msg) phrase-msg)
+                 (game 'set-right-answer))]))
 
 (define phrase-msg (new message% [parent game2_frame]
                       [label ""]
