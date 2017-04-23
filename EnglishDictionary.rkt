@@ -366,7 +366,7 @@ dispatch)
   (define respond (port->string dict-port))
   (close-input-port dict-port)
   
-  (cond ((number? (string-contains respond "404 Not Found")) (set! result (list (list "Error:" "Not Found"))))
+  (cond ((number? (string-contains respond "404 Not Found")) (set! result (list (list "Error:" (string-append "Not Found: " word)))))
         (else
          (searchDict (readjson-from-input respond) '|word| "word:")
          (searchDict (readjson-from-input respond) '|definitions| "definitions:")
