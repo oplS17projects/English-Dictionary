@@ -6,7 +6,7 @@
 (require rsound net/sendurl)
 (require  json racket/gui  net/url (only-in srfi/13 string-contains))
 
-(define word-list (list "boy" "lamp" "book" "city" "pen" "computer"))
+(define word-list (list "boy" "lamp" "book" "city" "beyond"  "desk" "beautiful"))
 
 (define button_enabled #t)
 
@@ -53,14 +53,28 @@
 
 (define (make-player)
   (define points 0)
+  (define questions-answered 0)
+
+  (define (add-question-answered)
+    (begin (set! questions-answered (+ questions-answered 1))
+           'ok))
+  
   (define (add-point point)
     (begin (set! points (+ points point))
             'ok))
+  
   (define (get-points)
     points)
+
+  (define (get-question-answered)
+    questions-answered)
+  
   (define (dispatch msg)
     (cond ((eq? msg 'add-point) add-point)
-          ((eq? msg 'get-points) (get-points))))
+          ((eq? msg 'get-points) (get-points))
+          ((eq? msg 'get-questions-answered) (get-question-answered))
+          ((eq? msg 'add-questions-asked) (add-question-answered))
+          ))
 dispatch)
 
 (define (make-game words-at-play)
@@ -137,6 +151,15 @@ dispatch)
                  (send def-msg set-label (cadr (cadr (search (send word-field get-value))))))])
 
 
+(define def-msg (new message% [parent main_frame]
+                      [label "" ]
+                      [font (make-object font% 10 'modern)]
+                      [min-height 250]
+                      [min-width 250]
+                      [auto-resize #t]
+                      ))
+
+
 (new button% [parent main_frame]
      [label "Listen to Pronounciation"]
      [callback (λ (button e)
@@ -146,7 +169,7 @@ dispatch)
   [label "Play What's the Word"]
   [callback (λ (button e)
               (begin (set! game (make-game word-list))
-                     (set! player (make-player))
+                     ;(set! player (make-player))
                      (game 'generate-choices)
                      ((game 'refresh-game-buttons) game1-buttons)
                      (game 'set-right-answer)
@@ -158,16 +181,21 @@ dispatch)
   [label "Play Fill in the Blank"]
   [callback (λ (button e)
               (begin (set! game (make-game word-list))
-                     (set! player (make-player))
+                     ;(set! player (make-player))
                      (game 'generate-choices)
                      ((game 'refresh-game-buttons) game2-buttons)
                      (game 'set-right-answer)
                      ((game 'refresh-game-msg) phrase-msg)
                      (send game2_frame show #t)))])
 
-(define def-msg (new message% [parent main_frame]
-                      [label ""]
-                      [auto-resize #t]))
+(new button% [parent main_frame]
+     [label "See Progress"]
+     [callback (λ (button e)
+                 (refresh-msg points-earned-msg (string-append "You have answered " (~a (player 'get-points)) " questions correctly"))
+                 (refresh-msg questions-answered-msg (string-append "You have attempeted to answer " (~a (player 'get-questions-answered)) " questions"))
+                 (send stats_frame show #t))])
+                 
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -181,6 +209,7 @@ dispatch)
 (define game1-button1 (new button% [parent game_frame]
      [label ""]
      [callback (λ (button e)
+                 (player 'add-questions-asked)
                  ((player 'add-point) ((game 'check-answer) 0))
                  (game 'filter-answer)
                  ((game 'end-game?) game_frame)
@@ -191,6 +220,7 @@ dispatch)
 (define game1-button2 (new button% [parent game_frame]
      [label "" ]
      [callback (λ (button e)
+                 (player 'add-questions-asked)
                  ((player 'add-point) ((game 'check-answer) 1))
                  (game 'filter-answer)
                  ((game 'end-game?) game_frame)
@@ -201,6 +231,7 @@ dispatch)
 (define game1-button3 (new button% [parent game_frame]
      [label ""]
      [callback (λ (button e)
+                 (player 'add-questions-asked)
                  ((player 'add-point) ((game 'check-answer) 2))
                  (game 'filter-answer)
                  ((game 'end-game?) game_frame)
@@ -229,35 +260,39 @@ dispatch)
 (define game2-button1 (new button% [parent game2_frame]
      [label ""]
      [callback (λ (button e)
+                 (player 'add-questions-asked)
+                 (player 'add-questions-asked)
                  ((player 'add-point) ((game 'check-answer) 0))
                  (game 'filter-answer)
                  ((game 'end-game?) game2_frame)
                  (game 'generate-choices)
                  ((game 'refresh-game-buttons) game2-buttons)
-                 ((game 'refresh-game-msg) phrase-msg)
-                 (game 'set-right-answer))]))
+                 (game 'set-right-answer)
+                 ((game 'refresh-game-msg) phrase-msg))]))
 
 (define game2-button2 (new button% [parent game2_frame]
      [label "" ]
      [callback (λ (button e)
+                 (player 'add-questions-asked)
                  ((player 'add-point) ((game 'check-answer) 0))
                  (game 'filter-answer)
                  ((game 'end-game?) game2_frame)
                  (game 'generate-choices)
                  ((game 'refresh-game-buttons) game2-buttons)
-                 ((game 'refresh-game-msg) phrase-msg)
-                 (game 'set-right-answer))]))
+                 (game 'set-right-answer)
+                 ((game 'refresh-game-msg) phrase-msg))]))
 
 (define game2-button3 (new button% [parent game2_frame]
      [label ""]
      [callback (λ (button e)
+                 (player 'add-questions-asked)
                  ((player 'add-point) ((game 'check-answer) 0))
                  (game 'filter-answer)
                  ((game 'end-game?) game2_frame)
                  (game 'generate-choices)
                  ((game 'refresh-game-buttons) game2-buttons)
-                 ((game 'refresh-game-msg) phrase-msg)
-                 (game 'set-right-answer))]))
+                 (game 'set-right-answer)
+                 ((game 'refresh-game-msg) phrase-msg))]))
 
 (define phrase-msg (new message% [parent game2_frame]
                       [label ""]
@@ -271,7 +306,36 @@ dispatch)
 
 ;;game2: fill in the blank
 ;;       filter an example gvien by oxford dictionary
-;;       give 3 options as buttons 
+;;       give 3 options as buttons
+
+;; stats frame:
+;; allows the user to see progress
+;; num -> string (~a num)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define stats_frame (new frame% [label "stats"]
+                         [height 500]
+                         [width 500]
+                         [parent main_frame]))
+
+(define questions-answered-msg (new message%
+                                    [parent stats_frame]
+                                    [label ""]
+                                    [auto-resize #t]
+                                    [font (make-object font% 20 'modern)]))
+
+(define points-earned-msg (new message%
+                       [parent stats_frame]
+                       [label ""]
+                       [auto-resize #t]
+                       [font (make-object font% 10 'modern)]))
+
+
+(define ok-button (new button% [parent stats_frame]
+     [label "OK"]
+     [callback (λ (button e)
+                 (send stats_frame show #f)
+                 )]))
+
 
 (send main_frame show #t)
 
