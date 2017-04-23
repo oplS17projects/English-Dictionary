@@ -6,7 +6,7 @@
 (require rsound net/sendurl)
 (require  json racket/gui  net/url (only-in srfi/13 string-contains))
 
-(define word-list (list "boy" "lamp" "book" "city" "beyond"  "desk" "beautiful"))
+;(define word-list (list "boy" "lamp" "book" "city" "beyond"  "desk" "beautiful"))
 
 (define button_enabled #t)
 
@@ -148,7 +148,10 @@ dispatch)
 (new button% [parent main_frame]
      [label "Search a word"]
      [callback (λ (button e)
-                 (send def-msg set-label (cadr (cadr (search (send word-field get-value))))))])
+                 (let ((a (search (send word-field get-value))))
+                   (if (equal? (car (car a)) "Error:")
+                       (send def-msg set-label (string-append "Error: " (send word-field get-value) " Not Found"))
+                       (send def-msg set-label (cadr (cadr a))))))])
 
 
 (define def-msg (new message% [parent main_frame]
@@ -168,20 +171,17 @@ dispatch)
 (new button% [parent main_frame]
   [label "Play What's the Word"]
   [callback (λ (button e)
-              (begin (set! game (make-game word-list))
-                     ;(set! player (make-player))
+              (begin (set! game (make-game (read-from-file wordList)))
                      (game 'generate-choices)
                      ((game 'refresh-game-buttons) game1-buttons)
                      (game 'set-right-answer)
-                     (send game_frame show #t)))]
-  [enabled (>= (length word-list) 5)])
+                     (send game_frame show #t)))])
 
 
 (new button% [parent main_frame]
   [label "Play Fill in the Blank"]
   [callback (λ (button e)
-              (begin (set! game (make-game word-list))
-                     ;(set! player (make-player))
+              (begin (set! game (make-game (read-from-file wordList)))
                      (game 'generate-choices)
                      ((game 'refresh-game-buttons) game2-buttons)
                      (game 'set-right-answer)
@@ -359,9 +359,9 @@ dispatch)
 (define path winPath)
 (define wordList "wordList")
 
-(define (search w)
+(define (search word)
   (set! result "")
-  (define con-url (string->url (string-append open_api w)))
+  (define con-url (string->url (string-append open_api word)))
   (define dict-port (get-pure-port con-url (list app_id app_key)))
   (define respond (port->string dict-port))
   (close-input-port dict-port)
