@@ -355,28 +355,30 @@ dispatch)
 
 
 ;------------
-(define word "")
+
 (define app_id "app_id:da0194c3")
 (define app_key "app_key:761ad80847bb97ee40842f7ecc43fade")
 (define open_api "https://od-api.oxforddictionaries.com:443/api/v1/entries/en/")
 
 (define file-path "C:\\Users\\sokthai\\Downloads/")
-(define sound-url "")
+(define word "")
 (define result "")
-
+(define wordList-with-example "wordList-with-example")
 (define macPath "/Users/sokthaitang/downloads/") ; path for mac
 (define winPath "C:\\Users\\joaocarlos\\Downloads\\") ; path for widnow
 (define ubuPath "/home/joao/Downloads/") ; path for ubuntu
-(define history (list))
+
 (define path winPath)
 (define wordList "wordList")
-(define wordList-with-example "wordList-with-example")
+
+;mathethatic, gray , computer 
 
 (define (search word)
   (set! result "")
   (define con-url (string->url (string-append open_api word)))
   (define dict-port (get-pure-port con-url (list app_id app_key)))
   (define respond (port->string dict-port))
+  
   (close-input-port dict-port)
   
   (cond ((number? (string-contains respond "404 Not Found")) (set! result (list (list "Error:" (string-append "Not Found: " word)))))
@@ -384,28 +386,75 @@ dispatch)
          (searchDict (readjson-from-input respond) '|word| "word:")
          (searchDict (readjson-from-input respond) '|definitions| "definitions:")
          (searchDict (readjson-from-input respond) '|examples| "examples:")
-         (searchDict (readjson-from-input respond) '|audioFile| "pronunciation:")
-         (let* ((audioURL (soundPath result)) 
-                (fileName (string-append path
-                                       (substring audioURL 43 (string-length audioURL)))))
-           (if (not (file-exists? fileName))
-               (send-url (soundPath result))
-               'ok)
-           (if (= (length result) 3)
-               (write-to-file word wordList)
-               (begin (write-to-file word wordList)
-                      (write-to-file word wordList-with-example)))
-               
-         )
+         (searchDict (readjson-from-input respond) '|audioFile| "audioFile:")
+         (cond ((eq? "audioFile:" (car (soundPath result))) 'ok)
+               (else (searchDict (readjson-from-input respond) '|pronunciations| "audioFile:")
+                     (set! result (fil result))))
+             
+         (downloadMP3 result)
+         
   ))
   result
 )
+
+
+
+(define (downloadMP3 lst)
+
+  (if (audio? lst)
+      (let* ((audioURL (cadr (soundPath lst))) 
+             (fileName (string-append path
+                                      (substring audioURL 43 (string-length audioURL))))) 
+        (if (not (file-exists? fileName))
+            (send-url (cadr (soundPath lst)))
+            'ok)
+        (write-to-file word wordList)
+
+        (if (= (length result) 3)
+               (write-to-file word wordList)
+               (begin (write-to-file word wordList)
+                      (write-to-file word wordList-with-example)))
+        )
+     'ok)
+
+  )
+
+
+(define (audio? lst)
+  (if (eq? (car (soundPath lst)) "audioFile:") #t #f)
+)
+
+;(define (remove-list lst)
+;(remove 1 (remove-duplicates (r-lst lst)))
+;
+;  )
+;
+;(define (r-lst lst )
+;      (map
+;       (lambda (x)
+;         (if (eq? (car x) "audioFile:")
+;             (if (not (list? (cadr x)))
+;                 (if (and (> (string-length (cadr x)) 43) (equal? (substring (cadr x) 0 12) "http://audio")) x 1)
+;                  (if (and (> (string-length (caadr x)) 43) (equal? (substring (caadr x) 0 12) "http://audio")) x 1))
+;             x))
+;      lst)
+;  )
+
+(define (fil lst)
+  (filter (lambda (x)
+          (if (list? (cadr x))
+              (not (and (eq? (car x) "audioFile:") (<= (string-length (caadr x)) 43)))
+              (not (and (eq? (car x) "audioFile:") (<= (string-length (cadr x)) 43)))))
+          lst)
+  )
+
 
 (define (readjson-from-input var)
   (with-input-from-string var
     (lambda () (read-json))))
 
 (define (searchDict hash k des)
+  
   (cond ((list? hash)  (searchDict (car hash) k des))
         ((and (hash? hash) (not (empty? (hash-ref hash k (lambda () empty))))) (display hash k des))     
         (else        
@@ -447,17 +496,20 @@ dispatch)
 (define (soundPath lst)
   
   (if (and (list? lst) (null? (cdr lst))) 
-      (cadr (car lst))
+      (car lst)
       (soundPath (cdr lst)))
 )
 
 
 (define (pronounce lst)
-  (let ((audioURL (soundPath lst)))
-    (cond  ((equal? (caar lst) "Error:") '())
-           (else
-            (play-sound
-               (string-append path (substring audioURL 43 (string-length audioURL))) #t)))))
+  (if (audio? lst)
+      (let ((audioURL (cadr (soundPath lst))))
+        (cond  ((equal? (caar lst) "Error:") '())
+               (else
+                (play-sound
+                 (string-append path (substring audioURL 43 (string-length audioURL))) #t))))
+      "pronunciation is not avaliable ")
+  )
 
 
  (define (write-to-file data path) 
