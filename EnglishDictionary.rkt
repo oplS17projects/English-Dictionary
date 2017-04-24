@@ -1,4 +1,3 @@
-
 #lang racket
 ;joao, sokthai
 ;what needs to be done (joao) --> make the gui "look better"
@@ -42,7 +41,7 @@
 
 (define (string->list lst)
   (string-split lst) )
-
+ 
 (define (list->string lst)
  (string-join lst) )
 
@@ -255,6 +254,7 @@ dispatch)
 (define game-listen-word (new button% [parent game_frame]
      [label "Listen to the Word"]
      [callback (λ (button e)
+                 (rename result)
                  (play-sound (string-append path (game 'get-answer) "_gb_1.mp3") #t))]))
 
 
@@ -357,29 +357,48 @@ dispatch)
 
 ;------------
 
+
+
+
 (define app_id "app_id:da0194c3")
 (define app_key "app_key:761ad80847bb97ee40842f7ecc43fade")
 (define open_api "https://od-api.oxforddictionaries.com:443/api/v1/entries/en/")
 
 (define file-path "C:\\Users\\sokthai\\Downloads/")
-(define word "")
+;(define word "")
 (define result "")
 (define wordList-with-example "wordList-with-example")
 (define macPath "/Users/sokthaitang/downloads/") ; path for mac
 (define winPath "C:\\Users\\joaocarlos\\Downloads\\") ; path for widnow
 (define ubuPath "/home/joao/Downloads/") ; path for ubuntu
 
-(define path winPath)
+(define path macPath)
 (define wordList "wordList")
+(define a "")
+
 
 ;mathethatic, gray , computer 
 
+
+(define createWordList-with-example (if (not (file-exists? wordList-with-example))
+                       (write empty (open-output-file wordList-with-example))
+                       'ok))
+
+(define createWordList (if (not (file-exists? wordList))
+                       (write empty (open-output-file wordList))
+                       'ok))
+
+
+
+
+
 (define (search word)
-  (set! result "")
+
+  (rename result)
   (define con-url (string->url (string-append open_api word)))
   (define dict-port (get-pure-port con-url (list app_id app_key)))
   (define respond (port->string dict-port))
-  
+  (set! result "")
   (close-input-port dict-port)
   
   (cond ((number? (string-contains respond "404 Not Found")) (set! result (list (list "Error:" (string-append "Not Found: " word)))))
@@ -405,12 +424,22 @@ dispatch)
   (if (audio? lst)
       (let* ((audioURL (cadr (soundPath lst))) 
              (fileName (string-append path
-                                      (substring audioURL 43 (string-length audioURL))))) 
+                                      word "_gb_1.mp3")))
+                                      ;(substring audioURL 43 (string-length audioURL))))) 
         (if (not (file-exists? fileName))
-            (send-url (cadr (soundPath lst)))
+           ; (let ((URL (cadr (soundPath lst)))
+             ;     (originalName (substring audioURL 43 (string-length audioURL)))
+               ;   )
+              
+              
+              (send-url (cadr (soundPath lst)))
+              ;(send-url URL)
+             ;(set! a (string-append path word "_gb_1.mp3"))
+             ; (if (not (eq? originalName (string-append word "_gb_1.mp3")))
+              ;    (rename-file-or-directory (string-append path originalName) (string-append path word "_gb_1.mp3"))
+              ;    'ok)
+             ; )
             'ok)
-        
-
         (if (and (> (length result) 3)
                  (> (string-contains (cadr (caddr result)) word) 0))
             (begin (write-to-file word wordList)
@@ -418,7 +447,6 @@ dispatch)
             (write-to-file word wordList))
         )
      'ok)
-
   )
 
 
@@ -504,12 +532,18 @@ dispatch)
 
 
 (define (pronounce lst)
+  (rename result)
   (if (audio? lst)
       (let ((audioURL (cadr (soundPath lst))))
         (cond  ((equal? (caar lst) "Error:") '())
                (else
-                (play-sound
-                 (string-append path (substring audioURL 43 (string-length audioURL))) #t))))
+               ; (play-sound
+               ;  (string-append path (substring audioURL 43 (string-length audioURL))) #t))))
+               (play-sound
+                 (string-append path (cadar lst) "_gb_1.mp3"
+                                ;(substring audioURL 43 (string-length audioURL))
+                                ) #t))))
+
       "pronunciation is not avaliable ")
   )
 
@@ -522,3 +556,21 @@ dispatch)
 
 (define (read-from-file path)
   (file->list path))
+
+(define (rename lst)
+
+(if (not (eq? lst ""))
+      (let* ((URL (cadr (soundPath lst)))
+            (originalName (substring URL 43 (string-length URL)))
+            )
+       ; (if (not (equal?  originalName (string-append (cadar result) "_gb_1.mp3")))
+       ;           (rename-file-or-directory (string-append path originalName) (string-append path (cadar result) "_gb_1.mp3"))
+       ;           'ok)
+
+        (if (not (file-exists? (string-append path (cadar result) "_gb_1.mp3")))
+                  (rename-file-or-directory (string-append path originalName) (string-append path (cadar result) "_gb_1.mp3"))
+                  'ok) 
+        )
+      'ok
+        )
+  )
