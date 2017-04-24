@@ -400,7 +400,7 @@ dispatch)
 
 (define (search word)
 
-  (rename result)
+  (if (and (not (equal? result "")) (not (equal? (caar result) "Error:"))) (rename result) 'ok)
   (define con-url (string->url (string-append open_api word)))
   (define dict-port (get-pure-port con-url (list app_id app_key)))
   (define respond (port->string dict-port))
