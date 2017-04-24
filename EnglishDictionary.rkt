@@ -227,7 +227,8 @@ dispatch)
                  ((game 'end-game?) game_frame)
                  (game 'generate-choices)
                  ((game 'refresh-game-buttons) game1-buttons)
-                 (game 'set-right-answer))]))
+                 (game 'set-right-answer))]
+     [min-width 150]))
 
 (define game1-button2 (new button% [parent game_frame]
      [label "" ]
@@ -238,7 +239,8 @@ dispatch)
                  ((game 'end-game?) game_frame)
                  (game 'generate-choices)
                  ((game 'refresh-game-buttons) game1-buttons)
-                 (game 'set-right-answer))]))
+                 (game 'set-right-answer))]
+     [min-width 150]))
 
 (define game1-button3 (new button% [parent game_frame]
      [label ""]
@@ -249,7 +251,8 @@ dispatch)
                  ((game 'end-game?) game_frame)
                  (game 'generate-choices)
                  ((game 'refresh-game-buttons) game1-buttons)
-                 (game 'set-right-answer))]))
+                 (game 'set-right-answer))]
+     [min-width 150]))
 
 (define game-listen-word (new button% [parent game_frame]
      [label "Listen to the Word"]
@@ -281,7 +284,8 @@ dispatch)
                  (game 'generate-choices)
                  ((game 'refresh-game-buttons) game2-buttons)
                  (game 'set-right-answer)
-                 ((game 'refresh-game-msg) phrase-msg))]))
+                 ((game 'refresh-game-msg) phrase-msg))]
+     [min-width 150]))
 
 (define game2-button2 (new button% [parent game2_frame]
      [label "" ]
@@ -293,7 +297,8 @@ dispatch)
                  (game 'generate-choices)
                  ((game 'refresh-game-buttons) game2-buttons)
                  (game 'set-right-answer)
-                 ((game 'refresh-game-msg) phrase-msg))]))
+                 ((game 'refresh-game-msg) phrase-msg))]
+     [min-width 150]))
 
 (define game2-button3 (new button% [parent game2_frame]
      [label ""]
@@ -305,7 +310,8 @@ dispatch)
                  (game 'generate-choices)
                  ((game 'refresh-game-buttons) game2-buttons)
                  (game 'set-right-answer)
-                 ((game 'refresh-game-msg) phrase-msg))]))
+                 ((game 'refresh-game-msg) phrase-msg))]
+     [min-width 150]))
 
 (define phrase-msg (new message% [parent game2_frame]
                       [label ""]
@@ -372,7 +378,7 @@ dispatch)
 (define winPath "C:\\Users\\joaocarlos\\Downloads\\") ; path for widnow
 (define ubuPath "/home/joao/Downloads/") ; path for ubuntu
 
-(define path macPath)
+(define path winPath)
 (define wordList "wordList")
 (define a "")
 
