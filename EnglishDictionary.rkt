@@ -287,7 +287,7 @@ dispatch)
      [label "" ]
      [callback (λ (button e)
                  (player 'add-questions-asked)
-                 ((player 'add-point) ((game 'check-answer) 0))
+                 ((player 'add-point) ((game 'check-answer) 1))
                  (game 'filter-answer)
                  ((game 'end-game?) game2_frame)
                  (game 'generate-choices)
@@ -299,7 +299,7 @@ dispatch)
      [label ""]
      [callback (λ (button e)
                  (player 'add-questions-asked)
-                 ((player 'add-point) ((game 'check-answer) 0))
+                 ((player 'add-point) ((game 'check-answer) 2))
                  (game 'filter-answer)
                  ((game 'end-game?) game2_frame)
                  (game 'generate-choices)
@@ -369,7 +369,7 @@ dispatch)
 (define winPath "C:\\Users\\joaocarlos\\Downloads\\") ; path for widnow
 (define ubuPath "/home/joao/Downloads/") ; path for ubuntu
 
-(define path macPath)
+(define path winPath)
 (define wordList "wordList")
 
 ;mathethatic, gray , computer 
@@ -411,10 +411,11 @@ dispatch)
             'ok)
         
 
-        (if (= (length result) 3)
-               (write-to-file word wordList)
-               (begin (write-to-file word wordList)
-                      (write-to-file word wordList-with-example)))
+        (if (and (> (length result) 3)
+                 (> (string-contains (cadr (caddr result)) word) 0))
+            (begin (write-to-file word wordList)
+                   (write-to-file word wordList-with-example))
+            (write-to-file word wordList))
         )
      'ok)
 
