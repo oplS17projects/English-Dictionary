@@ -1,3 +1,4 @@
+
 #lang racket
 ;joao, sokthai
 ;what needs to be done (joao) --> make the gui "look better"
@@ -368,7 +369,7 @@ dispatch)
 (define winPath "C:\\Users\\joaocarlos\\Downloads\\") ; path for widnow
 (define ubuPath "/home/joao/Downloads/") ; path for ubuntu
 
-(define path winPath)
+(define path macPath)
 (define wordList "wordList")
 
 ;mathethatic, gray , computer 
@@ -391,7 +392,7 @@ dispatch)
                (else (searchDict (readjson-from-input respond) '|pronunciations| "audioFile:")
                      (set! result (fil result))))
              
-         (downloadMP3 result)
+         (downloadMP3 result word)
          
   ))
   result
@@ -399,7 +400,7 @@ dispatch)
 
 
 
-(define (downloadMP3 lst)
+(define (downloadMP3 lst word)
 
   (if (audio? lst)
       (let* ((audioURL (cadr (soundPath lst))) 
@@ -408,7 +409,7 @@ dispatch)
         (if (not (file-exists? fileName))
             (send-url (cadr (soundPath lst)))
             'ok)
-        (write-to-file word wordList)
+        
 
         (if (= (length result) 3)
                (write-to-file word wordList)
