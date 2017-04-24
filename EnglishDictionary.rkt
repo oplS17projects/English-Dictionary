@@ -47,7 +47,7 @@
 
 (define (FIB-phrase sentence answer)
   (list->string (foldr (λ (x y) (if (equal? x answer)
-                     (append (list "********") y)
+                     (append (list "*****") y)
                      (append (list x) y))) '() (string->list sentence))))
 
 (define (make-player)
@@ -447,7 +447,7 @@ dispatch)
              ; )
             'ok)
         (if (and (> (length result) 3)
-                 (> (string-contains (cadr (caddr result)) word) 0))
+                 (number? (string-contains (FIB-phrase (cadr (caddr result)) word) "*****") ))
             (begin (write-to-file word wordList)
                    (write-to-file word wordList-with-example))
             (write-to-file word wordList))
