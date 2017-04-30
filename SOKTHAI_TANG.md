@@ -51,7 +51,7 @@ so the user will be able to call it and make the search
  
 ## 2. Selectors and Predicates using Procedural Abstraction
 
-The hash table is important for this function to parse the value of the (key, pair) format of hash table. 
+The hash table is important for the program to parse the value of the (key, pair) format of hash table. 
 It is being passed by a function called "readjson-from-input" that convert JSON to hash format.
 The hash table provides a audio URL that can be sent to the web and download the file. 
 
@@ -101,8 +101,6 @@ Recursively search the file and parse the appropriate information to the user wi
 ```
 
 
-
-
 ## 4. High order procedure. Filter the audio URL
 
 In many cases, the Oxford Dictionary APIs does not return a consistent audios format.
@@ -120,7 +118,7 @@ the string in order to send to the web URL.
 
 ## 5. Performance and efficiency
 
-Having the game to run smoothly and effectively is one of the main purpose of the design stage of this program.
+Having the game to run smoothly and effectively is one of the main purpose of the designing stage of this program.
 Since the game is having users selecting the right word after the word is played, it is a better idea to have the 
 audios file's name be unified. 
 
