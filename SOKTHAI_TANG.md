@@ -11,7 +11,7 @@ It implements a rich feature of hash table recursion search and the history data
 The search feature funciton is critical to the program to find the location of the definition, 
 pronounciation, example etc... from the nestest JSON file that is returned by the APIs.
 
-The history database file is providing a way for users to play game. 
+The history database file is providing a way for users to play games. 
 The word will be save in the file each time users searching a certain vocabulary, 
 it will allow users a way to practice the word by listen to select the word and 
 fill in a sentence. 
