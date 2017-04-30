@@ -3,7 +3,7 @@
 ## Sokthai Tang
 ### April 30, 2017
 
-# Overview
+ Overview
 This project provides a useful and conveience way to learn engilsh. 
 It interacts closly with the Oxford Dictionary API and users. 
 It implements a rich feature of hash table recursion search and the history database.
