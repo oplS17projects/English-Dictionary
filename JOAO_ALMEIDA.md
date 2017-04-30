@@ -6,13 +6,14 @@
 
 In our project we created a software that we believe would be helpful to people trying to learn English. There were two main parts to it. First we created a GUI interface that allowed the user to type any word in a text field, and displayed that word's definition back to the user. We also allowed the user to listen the pronounciation of the word. The second part of the program was to store the user's search history, and create games that allowed the users to practice on their newly gained vocabulary.
 
-My contribution to the code was to connect to the Oxford Dictionary API, manage the GUI interfaces (receive and display information), and manage game logic. 
+My contribution to the code was to connect to the Oxford Dictionary API, manage the GUI interfaces (receive and display information), and manage the game logic. 
 
 ## Libraries used:
 
 The code I have contributed to the project uses:
 
-``` (rquire net/url) 
+``` 
+    (rquire net/url) 
     (require racket/gui)
 ```
 
@@ -55,7 +56,7 @@ This procedure takes in a sentence, and a word. It returns a sentence, where if 
                      (append (list x) y))) '() (string->list sentence))))
 ```
 
-This procedure takes in a string (a sentence) and breakes it down into down into a list of strings. To do this I used the built in funtion (string-split str) . Then it uses foldr to build a new list. At each iteration it checks if the element from the original list is equal to the elmenet were are trying to replace with "******". If it is it appends "******", otherwise it appends the element that was tested. Then before it returns the result it transfor the newly produced list back into a string - also using a built in procedure (string-join lst).
+This procedure takes in a string (a sentence) and breakes it down into down into a list of strings. To do this I used the built in funtion (string-split str) . Then it uses foldr to build a new list. At each iteration it checks if the element from the original list is equal to the elmenet were are trying to replace with "******". If it is it appends "******", otherwise it appends the element that was tested. Before it returns the result it transform the newly produced list back into a string - also using a built in procedure (string-join lst).
 
 ## 3 Recursion : List-Ref
 
@@ -104,7 +105,7 @@ This procedure creates a player object. It uses state modifications to update th
 
 ## 5. Object Orientation/ State Modification / Data Abstraction : Game's Logic
 
-This procedure uses state modificatin and data abstraction to generate a list of possible answers, a correct answer and enswer no word is used twice as an answer on the same game session. 
+This procedure uses state modification and data abstraction to generate a list of possible answers, a correct answer and ensure no word is used twice as an answer on the same game session. It also checks if the user has aswered the question correctly.
 
 ```
 (define (make-game words-at-play)
@@ -162,4 +163,23 @@ This procedure uses state modificatin and data abstraction to generate a list of
   )
 ```
 
-Each time a user request to play a game, a game object is contructed by passing in a list of word (this list was created by my partner's code using the user's history). Other parts of the program uses selectors of this object to fetch a list of possible answers and the right answer. It also treats the list of words still at play as a state variable that is modified each time an question is answered: once a word is used as the "right answer" it is kicked out of the words at play list. The other two state variables are the "right answer" and the list of possible answers. They are both modified each time a question window is created. 
+Each time a user request to play a game, a game object is contructed by passing in a list of word (this list was created by my partner's code using the user's history). Other parts of the program uses selectors of this object to fetch a list of possible answers and the right answer. It also treats the list of words still at play as a state variable that is modified each time an question is answered: once a word is used as the "right answer" it is kicked out of the words at play list. It accomplish this by using a higher order function (filter):
+
+```
+  (define (filter-answer)
+    (begin (set! words-at-play (filter (λ (x) (not (equal? x answer))) words-at-play))
+           'ok))
+```
+The other two state variables are the "right answer" and the list of possible answers. They are both modified each time a question window is created. Another way that it uses data abstration is the way it checks for the right answer:
+
+```
+  (define (check-answer index)
+    (if (equal? answer (list-ref choices 0 index))
+          (begin (play-sound (string-append path "tada.mp3") #t)
+                 1)
+          (begin (play-sound (string-append path "Wrong-buzzer.mp3") #t)
+                 0)))
+```
+Another portion of the code sends in what button was pressed (0, 1, or 2), and this procedure figures out if they chose the right answer (by using list-ref, and comparing the user's answer to the right-answer). If it is right it plays a "ta-da" sound and returns 1 point. If it is wrong it plays a "wrong-buzzer" sound and returns 0 points. 
+
+By using object orientation, and data abstraction I was able to use the procedure (make-game lst) to manage two different games. The first, What is the Word, which allows the user to play the sound of a word and allows him/her to choose the correct answer from three choices. The second, Fill in the Blank, which displays a pharse with a missing word, and asks the user to choose from three choices.  
