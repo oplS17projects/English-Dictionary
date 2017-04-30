@@ -17,7 +17,7 @@ The words will be saved in the file each time users searches a certain vocabular
 **Authorship note:** All of the code described here was written by myself.
 
 # Libraries Used
-The code uses four libraries:
+The code uses five libraries:
 
 ```
 (require net/sendurl)
