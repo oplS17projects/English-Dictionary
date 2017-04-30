@@ -12,14 +12,12 @@ The search feature funciton is critical to the program to find the location of t
 pronounciation, example etc... from the nestest JSON file that is returned by the APIs.
 
 The history database file is providing a way for users to play games. 
-The word will be save in the file each time users searching a certain vocabulary, 
+The word will be save in the file each time users searching a certain vocabulary, and
 it will allow users a way to practice the word by listen to select the word and 
 fill in a sentence. 
 
-**Authorship note:** All of the code described here was written by myself.
 
 # Libraries Used
-The code uses four libraries:
 
 ```
 (require net/sendurl)
@@ -31,17 +29,16 @@ The code uses four libraries:
 * The "json" library is used to parse the replies from the Oxford Dictionary API.
 * The "racket/gui" library is needed for playing the MP3 audio file. 
 * The "net/url" library is used to make the URL that need to connect between the APIs and the programe. 
-* The "srfi/13" library contains a "string-contains" function that is used to search if the APIs return a valid result.
+* The "srfi/13" library contains a "string-contains" function that is used to determine if the APIs return a valid result.
 
 # Key Code Excerpts
 
-Here is a discussion of the most essential procedures, including a description of how they embody ideas 
-Organization of Programming languages course.
-
+The key concepts that are learnt from this Organization of Programming Language course is being used in this project as following. 
 
 ## 1. Initialization Oxford Dinctionary APIs object
 
-The following code open a port between the APIs and the program, so the user will be able to call it and make the search
+The following code open a port between the APIs and the program, 
+so the user will be able to call it and make the search
 
 ```
 (define app_id "app_id:da0194c3")
