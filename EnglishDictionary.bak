@@ -17,7 +17,7 @@
 (define (build-sublist-r num lst)
   (if (= num 0)
       '()
-      (let ((a (list-ref lst 0 (random (length lst))))) 
+      (let ((a (list-ref lst 0 (random (length lst)))))
         (cons a (build-sublist-r (- num 1 ) (filter (λ (x) (not (equal? x a))) lst))))))
       
 
@@ -375,7 +375,7 @@ dispatch)
 (define result "")
 (define wordList-with-example "wordList-with-example")
 (define macPath "/Users/sokthaitang/downloads/") ; path for mac
-(define winPath "C:\\Users\\sokthai\\Downloads\\") ; path for widnow
+(define winPath "C:\\Users\\joaocarlos\\Downloads\\") ; path for widnow
 (define ubuPath "/home/joao/Downloads/") ; path for ubuntu
 
 (define path winPath)
@@ -447,19 +447,13 @@ dispatch)
              ; )
             'ok)
         (if (and (> (length result) 3)
-                 (number? (string-contains (FIB-phrase (getString (cadr (caddr result))) word) "*****") ))
+                 (number? (string-contains (FIB-phrase (cadr (caddr result)) word) "*****") ))
             (begin (write-to-file word wordList)
                    (write-to-file word wordList-with-example))
             (write-to-file word wordList))
         )
      'ok)
   )
-
-(define (getString item)
-  (if (not (list? item)) item
-      (car item))
-  )
-
 
 
 (define (audio? lst)
