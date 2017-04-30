@@ -25,8 +25,8 @@ The code uses five libraries:
 (require racket/gui)
 (require net/url (only-in srfi/13 string-contains))
 ```
-* The "net/sendurl" is allow the program to send a remote URL to the server and download the audio file. 
-* The "json" library is used to parse the replies from the Oxford Dictionary API.
+* The "net/sendurl" library allows the program to send a remote URL to the server and download the audio file. 
+* The "json" library library is used to parse the replies from the Oxford Dictionary API.
 * The "racket/gui" library is needed for playing the MP3 audio file. 
 * The "net/url" library is used to make the URL that need to connect between the APIs and the programe. 
 * The "srfi/13" library contains a "string-contains" function that is used to search if the APIs return a valid result.
